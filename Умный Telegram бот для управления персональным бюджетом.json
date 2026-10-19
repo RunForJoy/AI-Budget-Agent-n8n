@@ -1,0 +1,3040 @@
+{
+  "name": "Умный Telegram бот для управления персональным бюджетом.",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -496,
+        -80
+      ],
+      "id": "64b40c32-1753-40aa-bdaa-e3d503154452",
+      "name": "Telegram Trigger",
+      "webhookId": "41414771-ec46-4cd9-9017-a04a9181f36c",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "user_state",
+        "key": "={{ $json.user_id }}.state",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -80
+      ],
+      "id": "351d0dd4-e4f8-4362-bde8-794c4e7a7095",
+      "name": "GetInitialState",
+      "credentials": {
+        "redis": {
+          "id": "QUVDWhR5gutjTThk",
+          "name": "Redis account 20129"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Params').item.json.text }}",
+                    "rightValue": "=/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5f252a4f-9bad-4355-8288-04f82194ac92"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "start_and_ask_limit"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "40fef7dd-6ba7-47a3-8de9-2c43b63427ce",
+                    "leftValue": "={{ $json.user_state }}",
+                    "rightValue": "set_limit",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "set_limit"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bc908206-0000-41f5-b2c8-b17675b7d18a",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "other"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        -96
+      ],
+      "id": "e8002f79-4f12-4c55-b74c-44ebac1ff3bc",
+      "name": "SwitchState"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3a734222-8913-43a4-a51c-eac15b364a6b",
+                    "leftValue": "={{ $('Params').item.json.callback_data }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "callback"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "753be587-0d73-427f-b918-d7fc0b46a481",
+                    "leftValue": "={{ $('Params').first().json.entities }}",
+                    "rightValue": "bot_command",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "command"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "75766815-c3d4-45b1-bad0-a082fe882f09",
+                    "leftValue": "={{ $('Params').first().json.voice_file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice_msg"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f53f03b4-b8a0-4bce-8e9a-624f9baee7c5",
+                    "leftValue": "={{ $('Params').item.json.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text_msg"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -112,
+        160
+      ],
+      "id": "655f455b-1bfa-4fd8-8adb-652f70195efd",
+      "name": "SwitchTgEntities"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9aea2e95-c3f7-4418-a768-b3b3852f760e",
+              "name": "user_id",
+              "value": "={{ $json.message?.from?.id || $json.callback_query?.from?.id }}",
+              "type": "number"
+            },
+            {
+              "id": "de18a5bd-b223-4cb3-a513-841da35c4219",
+              "name": "first_name",
+              "value": "={{ $json.message?.from?.first_name || $json.callback_query?.from?.first_name}}",
+              "type": "string"
+            },
+            {
+              "id": "9fb63066-7107-4a6c-8bd0-9f6046c833fa",
+              "name": "username",
+              "value": "={{ $json.message?.from?.username || $json.callback_query?.from?.username}}",
+              "type": "string"
+            },
+            {
+              "id": "e405f73d-bc90-44c7-9950-5a81bcc17bed",
+              "name": "text",
+              "value": "={{ $json.message?.text || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "41da53e8-348a-479c-a5a8-46b33cda1c1f",
+              "name": "entities",
+              "value": "={{ $json.message?.entities?.[0]?.type || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "1b98586b-a453-4c61-84e3-6612dc740812",
+              "name": "callback_data",
+              "value": "={{ $json.callback_query?.data || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "2cabcced-673a-4ab0-99c8-f41c80c468b5",
+              "name": "callback_id",
+              "value": "={{ $json.callback_query?.id || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "288cd7a4-3a25-406e-a1f5-eac0d3e6afb2",
+              "name": "voice_file_id",
+              "value": "={{ $json.message?.voice?.file_id || \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -288,
+        -80
+      ],
+      "id": "b0b1b973-a3d7-45fe-ad02-1a0c04d9e2b6",
+      "name": "Params"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $('Params').first().json.user_id }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "limit",
+              "displayName": "limit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        320,
+        -304
+      ],
+      "id": "4e5b0b96-ec81-4b77-9cec-c54b847175d4",
+      "name": "SaveUserProfile",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').first().json.user_id }}",
+        "text": "Добро пожаловать в бот расходов. Напишите ваш  лимит",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_notification": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        -304
+      ],
+      "id": "b3d24bf9-c01b-47fc-9653-eb8905293ecc",
+      "name": "ask limit",
+      "webhookId": "7847d500-4fa7-4487-b8e2-7393e28f04bc",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d4a7de9a-bae3-46d8-9ab7-23ead750c0f0",
+              "name": "budget",
+              "value": "={{ Number((($('Params').first().json.text || \"\").replace(/\\s/g,\"\").replace(\",\",\".\").match(/\\d+(?:\\.\\d+)?/) || [null])[0]) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -160
+      ],
+      "id": "39bc5aa2-4cf8-415b-9839-58eeb2e5526b",
+      "name": "ParseLimit "
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5682c8eb-2ccf-4dcd-b4b5-e974ea8131b0",
+              "leftValue": "={{ $json.budget }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        464,
+        -160
+      ],
+      "id": "1dcfb813-7def-47f9-b6a1-9fdcf43db903",
+      "name": "If > 0"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $('Params').first().json.user_id }}",
+            "limit": "={{ $json.budget }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "limit",
+              "displayName": "limit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        800,
+        -352
+      ],
+      "id": "98272cc6-0b91-48b0-bdca-533ee0b07af2",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Params').first().json.user_id }}.state",
+        "value": "base"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -352
+      ],
+      "id": "654023ed-632d-4eb7-ab9c-525b4a84848b",
+      "name": "setState_base",
+      "credentials": {
+        "redis": {
+          "id": "QUVDWhR5gutjTThk",
+          "name": "Redis account 20129"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Params').first().json.user_id }}.state",
+        "value": "set_limit"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -304
+      ],
+      "id": "7417059e-d75d-4699-b0f6-cf84c96f094a",
+      "name": "setState(set_limit)",
+      "credentials": {
+        "redis": {
+          "id": "QUVDWhR5gutjTThk",
+          "name": "Redis account 20129"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').first().json.user_id }}",
+        "text": "=✅ Лимит сохранён: {{ $('ParseLimit ').item.json.budget }} руб. Присылай траты в формате «такси 500». Команды: /status, /report.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -352
+      ],
+      "id": "e7ab98ac-855f-492d-9429-94b81917b59c",
+      "name": "budget_saved",
+      "webhookId": "f3e32cee-60a1-4ed9-a492-290b3cf209fb",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').item.json.user_id }}",
+        "text": "🙈 Не распознал число. Напиши лимит просто числом, например 50000.»",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_notification": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        -176
+      ],
+      "id": "3a5ec7a0-2612-4f8f-9891-e3c006340a34",
+      "name": "ask limit_again",
+      "webhookId": "7847d500-4fa7-4487-b8e2-7393e28f04bc",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "keys",
+        "keyPattern": "*.state"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        928
+      ],
+      "id": "32a81e7a-63b7-4e99-ac5e-43b7a4aeaae7",
+      "name": "DebugKeys",
+      "credentials": {
+        "redis": {
+          "id": "QUVDWhR5gutjTThk",
+          "name": "Redis account 20129"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Params').first().json.text }}",
+                    "rightValue": "/status",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "509e5da1-b88b-45f9-9461-11765543bfb8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "status"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "29e64464-d71a-40c8-bcb2-5def001037ba",
+                    "leftValue": "={{ $('Params').first().json.text }}",
+                    "rightValue": "/report",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "report"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "eaa5e30c-eb37-4b7e-898a-dce5217ede75",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "other"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        160
+      ],
+      "id": "392fcd08-909b-4aa0-ad27-32cd803d43d2",
+      "name": "SwitchCommand"
+    },
+    {
+      "parameters": {
+        "content": "SwitchState отвечает на вопрос «в каком мы режиме?»: start / set_limit / other (base)."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -112
+      ],
+      "id": "2f2d4766-6937-4005-acbd-d0bd1a080e7d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_schema",
+              "name": "spending_schema",
+              "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"category\": { \"type\": \"string\" },\n    \"sum\": { \"type\": \"number\" }\n  },\n  \"required\": [\"category\", \"sum\"],\n  \"additionalProperties\": false\n}"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        432
+      ],
+      "id": "a995c2bf-4bb4-4503-b8f3-56f8ed70b5ac",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Habo5vbiUDvELVeP",
+          "name": "OpenAI account 393"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "==Ты — парсер трат бота личных финансов. Определи категорию и сумму из текста пользователя: \"{{ $json.transcribed || $('Params').first().json.text }}\".\n\nПравила:\n- category — одно слово в нижнем регистре, единственном числе, ТОЛЬКО из списка: еда, транспорт, развлечения, здоровье, быт, прочее.\n- Примеры соответствий: «такси», «метро», «бензин», «автобус» → транспорт; «кофе», «продукты», «обед», «ресторан» → еда; «кино», «концерт», «игра» → развлечения; «аптека», «врач» → здоровье; «коммуналка», «хозтовары» → быт; не подходит ни к одной → прочее.\n- sum — число траты без слов и символов валюты. Если в тексте несколько чисел — бери то, что означает сумму траты.\n- Если это не трата (приветствие, вопрос, команда, просто текст) — category \"none\", sum 0.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        256
+      ],
+      "id": "7a48a420-abbd-432a-bb6e-e2a75965b461",
+      "name": "ParseSpending"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e67aa4c8-70ef-48f5-8835-0c902eebab5c",
+              "name": "parsed",
+              "value": "={{ (() => { try { return JSON.parse($('ParseSpending').first().json.output); } catch (e) { return { category: \"none\", sum: 0 }; } })() }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        672
+      ],
+      "id": "49afb7f4-e00e-4c63-a545-5ae138daac89",
+      "name": "ParseOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6e11c4b9-dddc-4796-a880-b911c375315a",
+              "leftValue": "={{ $json.parsed.sum }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "942c1b08-140a-4abe-ae4b-9e674cae0071",
+              "leftValue": "={{ $json.parsed.category }}",
+              "rightValue": "none",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        464,
+        672
+      ],
+      "id": "3f36ee30-80a5-461c-b0c4-535ae3b4efd9",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').item.json.user_id }}",
+        "text": "🤔 Не понял трату. Формат: «такси 500»",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_notification": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        768
+      ],
+      "id": "ab00dba9-8752-4e18-8d1c-cc518c299dcd",
+      "name": "SendNotUnderstood ",
+      "webhookId": "7847d500-4fa7-4487-b8e2-7393e28f04bc",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1135851557,
+          "mode": "list",
+          "cachedResultName": "spendings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=1135851557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $('Params').item.json.user_id }}",
+            "category": "={{ $('ParseOutput').item.json.parsed.category }}",
+            "sum": "={{ $('ParseOutput').item.json.parsed.sum }}",
+            "date": "={{ new Date().toISOString().slice(0,10) }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sum",
+              "displayName": "sum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        656,
+        608
+      ],
+      "id": "fefc80df-6674-4b8b-8a4a-908631f5d8ba",
+      "name": "AppendSpending",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Params').first().json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        800,
+        608
+      ],
+      "id": "5dabd9f6-9e06-43f9-872e-93efdf9c778d",
+      "name": "GetUserBudgetRow",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1135851557,
+          "mode": "list",
+          "cachedResultName": "spendings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=1135851557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Params').first().json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        608
+      ],
+      "id": "9e383cee-12e5-4b86-8ff1-fb6f5b98b3cf",
+      "name": "GetSpendings",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "99f06943-f1ef-408f-9b33-ab4cb393e854",
+              "leftValue": "={{ $json.date }}",
+              "rightValue": "={{ new Date().toISOString().slice(0,8) + \"01\" }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "afterOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1088,
+        608
+      ],
+      "id": "185962fd-fd1c-43e2-b7d5-d7f3661ae9c3",
+      "name": "FilterMonth"
+    },
+    {
+      "parameters": {
+        "content": "ф-ей {{ new Date().toISOString().slice(0,8) + \"01\" }} получаем первый день месяца                        new Date() — текущий момент как объект Date;\n.toISOString() — строка вида \"2026-08-14T12:34:56.789Z\";\n.slice(0,8) — отрезаем \"2026-08-\";\n+\"01\" — получаем \"2026-08-01\" — первый день текущего месяца.",
+        "height": 240,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        784
+      ],
+      "id": "36f5a2b0-9122-4d29-8b79-da9abe1b4e79",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "sum",
+              "field": "sum"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        1232,
+        608
+      ],
+      "id": "c1cc55e3-1620-4cd6-91ad-1e33d2af044d",
+      "name": "SummarizeMonth"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').item.json.user_id }}",
+        "text": "==✅ Записал: {{ $('ParseOutput').first().json.parsed.category }} — {{ $('ParseOutput').first().json.parsed.sum }} руб.\nТы потратил {{ $json.spent }} руб. из {{ Number($('GetUserBudgetRow').first().json.limit || 0) }} руб. ({{ $json.pct }}% лимита). Осталось {{ $json.left }} руб.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        608
+      ],
+      "id": "94ce7789-b070-4d1e-bd70-d8d5f704dc46",
+      "name": "SendConfirm",
+      "webhookId": "d943b6ed-5ca1-4ab7-9d89-c31484d1a659",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7236f18-6cf8-4be2-b15f-ff8b6d0a7d59",
+              "name": "spent",
+              "value": "={{ $json.sum_sum }}",
+              "type": "number"
+            },
+            {
+              "id": "2354d591-0957-4061-a640-b66f4d310e58",
+              "name": "left",
+              "value": "={{ Number($('GetUserBudgetRow').first().json.limit || 0) - Number($json.sum_sum || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "a79a14e4-46f8-4c04-a0cb-2e077499114a",
+              "name": "pct",
+              "value": "={{ (() => { const b = Number($('GetUserBudgetRow').first().json.limit || 0); const s = Number($json.sum_sum || 0); return b > 0 ? Math.round((s / b) * 100) : 0; })() }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        608
+      ],
+      "id": "a61e6be6-00a1-4cab-b6ce-92c6706bec42",
+      "name": "ConfirmCalc:"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Params').first().json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        -32
+      ],
+      "id": "6cea1767-9273-41ca-a480-891711f8c22e",
+      "name": "StatusBudget",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1135851557,
+          "mode": "list",
+          "cachedResultName": "spendings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=1135851557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Params').first().json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        -32
+      ],
+      "id": "5d82ba66-00a3-41e5-b00b-b8f9d9928f5f",
+      "name": "StatusSpendings",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "99f06943-f1ef-408f-9b33-ab4cb393e854",
+              "leftValue": "={{ $json.date }}",
+              "rightValue": "={{ new Date().toISOString().slice(0,8) + \"01\" }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "afterOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        -32
+      ],
+      "id": "c59d1d4b-ac73-4615-b01f-1d0c744080b4",
+      "name": "StatusFilterMonth",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "sum",
+              "field": "sum"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        -32
+      ],
+      "id": "cc54bb66-0365-4487-b375-71c39a7aa8f8",
+      "name": "StatusSummarize",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7236f18-6cf8-4be2-b15f-ff8b6d0a7d59",
+              "name": "spent",
+              "value": "={{ Number($json.sum_sum || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "2354d591-0957-4061-a640-b66f4d310e58",
+              "name": "left",
+              "value": "={{ Number($('StatusBudget').first().json.limit || 0) - Number($json.sum_sum || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "a79a14e4-46f8-4c04-a0cb-2e077499114a",
+              "name": "pct",
+              "value": "={{ (() => { const b = Number($('StatusBudget').first().json.limit || 0); const s = Number($json.sum_sum || 0); return b > 0 ? Math.round((s / b) * 100) : 0; })() }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        -32
+      ],
+      "id": "37f3dffc-dd14-4a53-9dbf-ea4245fa0ed2",
+      "name": "StatusCalc"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').first().json.user_id }}",
+        "text": "==📊 Статус: ты потратил {{ $json.spent }} руб. из {{ Number($('StatusBudget').first().json.limit || 0) }} руб. ({{ $json.pct }}% лимита). Осталось {{ $json.left }} руб.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        -176
+      ],
+      "id": "5a33e4ac-324b-4be5-bb1e-6dea15378da0",
+      "name": "SendStatus",
+      "webhookId": "d943b6ed-5ca1-4ab7-9d89-c31484d1a659",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Params').first().json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        112
+      ],
+      "id": "f5bf9add-a2ae-4654-8d53-e9ceedf1cdbe",
+      "name": "ReportBudget",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1135851557,
+          "mode": "list",
+          "cachedResultName": "spendings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=1135851557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Params').first().json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        112
+      ],
+      "id": "69bae587-6c9c-423e-b56b-94d50edafe09",
+      "name": "ReportSpendings",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "99f06943-f1ef-408f-9b33-ab4cb393e854",
+              "leftValue": "={{ $json.date }}",
+              "rightValue": "={{ new Date().toISOString().slice(0,8) + \"01\" }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "afterOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        112
+      ],
+      "id": "89dd7159-2dc0-42e6-9fd8-a521c5f8fdb4",
+      "name": "ReportFilterMonth",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "sum",
+              "field": "sum"
+            }
+          ]
+        },
+        "fieldsToSplitBy": "category",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        112
+      ],
+      "id": "430b8b4e-296b-428b-8209-8462eaeb2f67",
+      "name": "ReportByCategory",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "sum_sum",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        976,
+        112
+      ],
+      "id": "5953e5d1-94ac-442d-83ba-84509c839b6e",
+      "name": "ReportSort"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        112
+      ],
+      "id": "2d78843a-e3a0-4daf-83dd-31ed56a7a4e2",
+      "name": "ReportLimit"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c5489db0-6c50-4a47-9a23-131e7e00b4b6",
+              "name": "top3",
+              "value": "={{ $('ReportSort').all().map(i => i.json).slice(0,3).map(r => `— ${r.category}: ${Number(r.sum_sum || 0)} руб.`).join(\"\\n\") }}",
+              "type": "string"
+            },
+            {
+              "id": "c43537e0-0560-48e4-97bf-15b857eff5b1",
+              "name": "spent",
+              "value": "={{ $('ReportSort').all().map(i => i.json).reduce((a, r) => a + Number(r.sum_sum || 0), 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "6892a931-dbd2-4015-8be4-bf5403e30cfd",
+              "name": "budget",
+              "value": "={{ Number($('ReportBudget').first().json.limit || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "49e5680b-29c3-492b-8917-4efc4a61dece",
+              "name": "left",
+              "value": "={{ Number($('ReportBudget').first().json.limit || 0) - $('ReportSort').all().map(i => i.json).reduce((a, r) => a + Number(r.sum_sum || 0), 0) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        112
+      ],
+      "id": "60f9f842-b5f8-49f2-94cb-e639a36c78fd",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').first().json.user_id }}",
+        "text": "==📊 Отчёт за {{ new Date().toISOString().slice(0,7) }}:\n{{ $json.top3 }}\n\nПотрачено {{ $json.spent }} руб. из {{ $json.budget }} руб. Осталось {{ $json.left }} руб.",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "💡 Совет от ИИ",
+                    "additionalFields": {
+                      "callback_data": "ai_advice"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        112
+      ],
+      "id": "1c108751-6054-4066-ba55-ca9d24975485",
+      "name": "SendReport",
+      "webhookId": "d943b6ed-5ca1-4ab7-9d89-c31484d1a659",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "callback",
+        "queryId": "={{ $('Params').first().json.callback_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        384
+      ],
+      "id": "8c9531c4-1359-41ef-919c-dfe3d4db1673",
+      "name": "AnswerCallback",
+      "webhookId": "a921ff43-2dba-42dd-8939-bb5f3e39246a",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Params').item.json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -320,
+        384
+      ],
+      "id": "31d2a988-56d2-4306-bb0a-cb145c18f33f",
+      "name": "AdviceBudget",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1135851557,
+          "mode": "list",
+          "cachedResultName": "spendings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=1135851557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Params').item.json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -192,
+        384
+      ],
+      "id": "0581b289-b39f-49fc-9ac3-8fc6a32cd9ce",
+      "name": "AdviceSpendings",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "99f06943-f1ef-408f-9b33-ab4cb393e854",
+              "leftValue": "={{ $json.date }}",
+              "rightValue": "={{ new Date().toISOString().slice(0,8) + \"01\" }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "afterOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -448,
+        576
+      ],
+      "id": "61001bc4-48cf-45bb-b429-c81f62266e39",
+      "name": "AdviceFilterMonth"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "sum",
+              "field": "sum"
+            }
+          ]
+        },
+        "fieldsToSplitBy": "category",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        576
+      ],
+      "id": "f3ade833-7f87-461b-9a94-d62243f15d34",
+      "name": "AdviceByCategory"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        576
+      ],
+      "id": "82a7a8f9-4707-4383-a6a0-18071441ee0f",
+      "name": "AdviceLimit"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "15f59ee6-ddce-4ad5-afe7-5c7d3b249af3",
+              "name": "stats",
+              "value": "={{ $('AdviceByCategory').all().map(i => i.json).sort((a, b) => Number(b.sum_sum) - Number(a.sum_sum)).map(r => `${r.category}: ${Number(r.sum_sum || 0)} руб.`).join(\", \") }}",
+              "type": "string"
+            },
+            {
+              "id": "69c667d6-2f97-465e-b80a-35475a58c203",
+              "name": "spent",
+              "value": "={{ $('AdviceByCategory').all().map(i => i.json).reduce((a, r) => a + Number(r.sum_sum || 0), 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "a1091532-d3d9-49c6-aaea-6523e8c865fd",
+              "name": "budget",
+              "value": "={{ Number($('AdviceBudget').first().json.limit || 0) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        752
+      ],
+      "id": "f8edde3c-9a3c-476c-a4ca-d25ba6c7c11c",
+      "name": "BuildAdvicePrompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "==Бюджет пользователя на месяц: {{ $json.budget }} руб., потрачено {{ $json.spent }} руб. Категории за месяц: {{ $json.stats }}. Дай 2–3 конкретных совета по экономии: дружелюбно, кратко, без markdown и заголовков.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        752
+      ],
+      "id": "5ee72c4f-92dd-42f6-b8b0-01effe11a6d6",
+      "name": "AdviceAgent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        912
+      ],
+      "id": "9c7b391e-7efc-42b1-8a11-e48e78e4bb27",
+      "name": "AdviceModel)",
+      "credentials": {
+        "openAiApi": {
+          "id": "Habo5vbiUDvELVeP",
+          "name": "OpenAI account 393"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').first().json.user_id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        752
+      ],
+      "id": "d7983ca0-442d-435f-b696-098142e11b78",
+      "name": "SendAdvice",
+      "webhookId": "d943b6ed-5ca1-4ab7-9d89-c31484d1a659",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Params').first().json.voice_file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        336
+      ],
+      "id": "d4a51398-6cd4-4bfb-8a9e-c454ff2b303f",
+      "name": "VoiceFile",
+      "webhookId": "3a286ac2-4bba-4096-8f16-a6526e18562c",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        288,
+        336
+      ],
+      "id": "f7b126c8-fd9d-44c9-933a-98c43ae0ea6f",
+      "name": "TranscribeVoice",
+      "credentials": {
+        "openAiApi": {
+          "id": "Habo5vbiUDvELVeP",
+          "name": "OpenAI account 393"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "836f15a7-484e-4926-b89c-06117edbf248",
+              "name": "transcribed",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        320
+      ],
+      "id": "e857773a-d580-4518-b1c6-f3299e6175d5",
+      "name": "VoiceToText"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b195ff67-9e12-40fa-b6ed-adbd382a9b89",
+              "leftValue": "={{ $json.spent }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        -32
+      ],
+      "id": "280de9b1-dcde-4de7-8926-be67f1eb3de5",
+      "name": "IF StatusHasSpendings"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').item.json.user_id }}",
+        "text": "📊 В этом месяце трат пока нет. Напиши «кофе 200», чтобы записать первую.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        -16
+      ],
+      "id": "d778419f-d246-4e94-8a43-4badcde74567",
+      "name": "SendStatusEmpty",
+      "webhookId": "912ce6b2-199c-4522-b650-36b41be2cad1",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').item.json.user_id }}",
+        "text": "📊 Отчёт появится после первой траты месяца. Напиши «кофе 200», чтобы начать.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        288
+      ],
+      "id": "3e5ce0fb-9da3-4a46-aad6-419d76fd93fc",
+      "name": "SendReportEmpty",
+      "webhookId": "912ce6b2-199c-4522-b650-36b41be2cad1",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b195ff67-9e12-40fa-b6ed-adbd382a9b89",
+              "leftValue": "={{ $json.spent }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1360,
+        112
+      ],
+      "id": "99a6892f-c156-4d76-88a2-e10b3f111d26",
+      "name": "IF ReportHasSpendings"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        848
+      ],
+      "id": "c7014d20-7f29-4d69-b244-05414dd324e5",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        848
+      ],
+      "id": "8e77c700-d152-4e20-b025-a9968083d6bf",
+      "name": "GetAllUsers",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg",
+          "mode": "list",
+          "cachedResultName": "finance_tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1135851557,
+          "mode": "list",
+          "cachedResultName": "spendings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pJxO7BobEZqoG89V0fFprIzKxbPoSUHhuoSKBZ0r8Lg/edit#gid=1135851557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            },
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ new Date(Date.now() - 86400000).toISOString().slice(0,10) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        848
+      ],
+      "id": "ab5c0a3c-f8fd-41fd-9db1-f74bb475748e",
+      "name": "GetYesterdaySpendings",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qFvXMinpcGDdHqbQ",
+          "name": "Google Sheets account 8062177"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "sum",
+              "field": "sum"
+            }
+          ]
+        },
+        "fieldsToSplitBy": "user_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        736,
+        928
+      ],
+      "id": "1258af6c-38a8-4505-b90d-c947d886e319",
+      "name": "SummarizeDaily"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "843601b0-cbe4-4394-9007-b6fd544d1cf6",
+              "name": "total",
+              "value": "={{ Number($json.sum_sum || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "ebc64777-5038-43f5-be52-76cda6cb1b9d",
+              "name": "cats",
+              "value": "={{ Object.entries($('GetYesterdaySpendings').all().map(i => i.json).filter(r => String(r.user_id) === String($json.user_id)).reduce((acc, r) => { const c = r.category || \"прочее\"; acc[c] = (acc[c] || 0) + Number(r.sum || 0); return acc; }, {})).map(([c, s]) => `— ${c}: ${s} руб.`).join(\"\\n\") }}",
+              "type": "string"
+            },
+            {
+              "id": "a97fd81f-822a-4774-ab28-473f02b196a6",
+              "name": "user_id",
+              "value": "={{ $json.user_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        928
+      ],
+      "id": "6064c8cd-fa69-455d-b3f4-030dea89cd46",
+      "name": "BuildDailyMsg"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.user_id }}",
+        "text": "==☀️ Доброе утро! Вчера ({{ new Date(Date.now() - 86400000).toISOString().slice(0,10) }}) вы потратили {{ $json.total }} руб.\n{{ $json.cats }}\nХорошего дня!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        928
+      ],
+      "id": "ceae0776-a52e-4bff-a730-be0c55516957",
+      "name": "Send a text message",
+      "webhookId": "c5682ac5-a46d-4cee-b095-5b6e392cdfcb",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').first().json.user_id }}",
+        "text": "Не знаю такую команду. Я понимаю: /status, /report. А просто текст считаю тратой: «кофе 200».",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        240
+      ],
+      "id": "126f1dfb-2d32-4f87-be9c-0ac36cb4b858",
+      "name": "SendUnknownCommand",
+      "webhookId": "ac8c03cc-2da0-4f4d-a050-e8d04c263da5",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Params').first().json.user_id }}",
+        "text": "=Прости, голосовые пока не поддерживаю — напиши текстом, например: «кофе 200»",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "💡 Совет от ИИ",
+                    "additionalFields": {
+                      "callback_data": "ai_advice"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        496
+      ],
+      "id": "02ba42c2-92e5-470a-9366-a715af2b5ebd",
+      "name": "optionNotAvailable",
+      "webhookId": "d943b6ed-5ca1-4ab7-9d89-c31484d1a659",
+      "credentials": {
+        "telegramApi": {
+          "id": "AabA6FXH4weSaxue",
+          "name": "finance_tracker_bot"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "ParseOutput": [
+      {
+        "json": {
+          "parsed": {
+            "category": "такси",
+            "sum": 400
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetInitialState": {
+      "main": [
+        [
+          {
+            "node": "SwitchState",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SwitchState": {
+      "main": [
+        [
+          {
+            "node": "setState(set_limit)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ParseLimit ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SwitchTgEntities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Params": {
+      "main": [
+        [
+          {
+            "node": "GetInitialState",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SaveUserProfile": {
+      "main": [
+        [
+          {
+            "node": "ask limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ask limit": {
+      "main": [
+        []
+      ]
+    },
+    "ParseLimit ": {
+      "main": [
+        [
+          {
+            "node": "If > 0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If > 0": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ask limit_again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "setState_base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setState(set_limit)": {
+      "main": [
+        [
+          {
+            "node": "SaveUserProfile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setState_base": {
+      "main": [
+        [
+          {
+            "node": "budget_saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SwitchTgEntities": {
+      "main": [
+        [
+          {
+            "node": "AnswerCallback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SwitchCommand",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VoiceFile",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ParseSpending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ParseSpending",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ParseSpending": {
+      "main": [
+        [
+          {
+            "node": "ParseOutput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ParseOutput": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AppendSpending",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendNotUnderstood ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AppendSpending": {
+      "main": [
+        [
+          {
+            "node": "GetUserBudgetRow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetUserBudgetRow": {
+      "main": [
+        [
+          {
+            "node": "GetSpendings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetSpendings": {
+      "main": [
+        [
+          {
+            "node": "FilterMonth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterMonth": {
+      "main": [
+        [
+          {
+            "node": "SummarizeMonth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SummarizeMonth": {
+      "main": [
+        [
+          {
+            "node": "ConfirmCalc:",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConfirmCalc:": {
+      "main": [
+        [
+          {
+            "node": "SendConfirm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SwitchCommand": {
+      "main": [
+        [
+          {
+            "node": "StatusBudget",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ReportBudget",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendUnknownCommand",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StatusBudget": {
+      "main": [
+        [
+          {
+            "node": "StatusSpendings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StatusSpendings": {
+      "main": [
+        [
+          {
+            "node": "StatusFilterMonth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StatusFilterMonth": {
+      "main": [
+        [
+          {
+            "node": "StatusSummarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StatusSummarize": {
+      "main": [
+        [
+          {
+            "node": "StatusCalc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StatusCalc": {
+      "main": [
+        [
+          {
+            "node": "IF StatusHasSpendings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReportBudget": {
+      "main": [
+        [
+          {
+            "node": "ReportSpendings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReportSpendings": {
+      "main": [
+        [
+          {
+            "node": "ReportFilterMonth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReportFilterMonth": {
+      "main": [
+        [
+          {
+            "node": "ReportByCategory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReportByCategory": {
+      "main": [
+        [
+          {
+            "node": "ReportSort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReportSort": {
+      "main": [
+        [
+          {
+            "node": "ReportLimit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReportLimit": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "IF ReportHasSpendings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AnswerCallback": {
+      "main": [
+        [
+          {
+            "node": "AdviceBudget",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AdviceBudget": {
+      "main": [
+        [
+          {
+            "node": "AdviceSpendings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AdviceSpendings": {
+      "main": [
+        [
+          {
+            "node": "AdviceFilterMonth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AdviceFilterMonth": {
+      "main": [
+        [
+          {
+            "node": "AdviceByCategory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AdviceByCategory": {
+      "main": [
+        [
+          {
+            "node": "AdviceLimit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AdviceLimit": {
+      "main": [
+        [
+          {
+            "node": "BuildAdvicePrompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BuildAdvicePrompt": {
+      "main": [
+        [
+          {
+            "node": "AdviceAgent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AdviceModel)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AdviceAgent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AdviceAgent": {
+      "main": [
+        [
+          {
+            "node": "SendAdvice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VoiceFile": {
+      "main": [
+        [
+          {
+            "node": "TranscribeVoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TranscribeVoice": {
+      "main": [
+        [
+          {
+            "node": "VoiceToText",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "optionNotAvailable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VoiceToText": {
+      "main": [
+        [
+          {
+            "node": "ParseSpending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF StatusHasSpendings": {
+      "main": [
+        [
+          {
+            "node": "SendStatus",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendStatusEmpty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF ReportHasSpendings": {
+      "main": [
+        [
+          {
+            "node": "SendReport",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendReportEmpty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "GetAllUsers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetAllUsers": {
+      "main": [
+        [
+          {
+            "node": "GetYesterdaySpendings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetYesterdaySpendings": {
+      "main": [
+        [
+          {
+            "node": "SummarizeDaily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SummarizeDaily": {
+      "main": [
+        [
+          {
+            "node": "BuildDailyMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BuildDailyMsg": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Mxi50zxBrAmvrKl3",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "0841d41f-39f6-4a51-9a14-bdcc505084fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4300700b5a89163b88ad6a908ff9e3076c705e8b03a3f40f03ff2f29f7e4289"
+  },
+  "nodeGroups": [],
+  "id": "hyX12cPKFllcGSS6",
+  "tags": []
+}
